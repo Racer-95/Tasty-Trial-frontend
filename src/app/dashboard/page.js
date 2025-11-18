@@ -21,7 +21,7 @@ export default function Dashboard() {
 
       try {
         // ✅ 2️⃣ Fetch protected data
-        const res = await axios.get("http://localhost:3000/users", {
+        const res = await axios.get("https://tasty-trail-backend.onrender.com/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
