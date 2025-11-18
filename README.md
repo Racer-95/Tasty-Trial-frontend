@@ -1,40 +1,45 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+TastyTrail – Recipe Sharing Platform
 
-## Getting Started
+TastyTrail is a community-driven recipe sharing platform where users can explore, create, and interact with food recipes from around the world.
 
-First, run the development server:
+🚩 Problem Statement
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Most recipe platforms focus on professional chefs, leaving home cooks without a community-focused space. TastyTrail solves this by enabling users to easily share recipes, discover new dishes, and interact with other cooking enthusiasts.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🏗 Tech Stack & Architecture
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Architecture: Frontend → Backend (API) → Database
+Frontend: Next.js, TailwindCSS, Axios
+Backend: Node.js, Express.js, Prisma ORM
+Database: MySQL
+Auth: JWT, bcrypt.js
+Hosting: Frontend (Vercel), Backend (Render/Railway), Database (MySQL Cloud)
+Version Control: Git & GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+⭐ Key Features
 
-## Learn More
+Authentication: Signup, login, logout, JWT-secured routes
 
-To learn more about Next.js, take a look at the following resources:
+CRUD Recipes: Create, view, edit, delete recipes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Interactions: Like recipes (comments coming soon)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend Pages: Home, Login, Signup, Dashboard, Recipe Details
 
-## Deploy on Vercel
+Search & Filters: Search by title, sort by likes or recency, filter by cuisine/category/calories
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Pagination: Smooth browsing for large recipe lists
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# Tasty-Trial-frontend
->>>>>>> 8ed1f3f006fb1ee1eeebbc907c907c1ce8a16281
+📡 API Endpoints
+Endpoint	Method	Description	Access
+/api/signup	POST	Register user	Public
+/api/login	POST	Login & return JWT	Public
+/api/recipes	GET	Get all recipes (with search/sort/filter)	Auth
+/api/recipes/:id	GET	Get single recipe	Auth
+/api/recipes	POST	Create recipe	Auth
+/api/recipes/:id/like	POST	Like recipe	Auth
+/api/dashboard	GET	View user recipes & liked posts	Auth
+/api/recipes/:id/comment	POST	Add comment (future)	Auth
+🎯 Conclusion
+
+TastyTrail bridges the gap between home cooks and food lovers by providing an engaging platform to share and discover creative recipes. It promotes community-driven cooking with a modern and intuitive interface.
