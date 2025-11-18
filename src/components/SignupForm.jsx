@@ -17,7 +17,7 @@ export default function SignupForm() {
     setMessage("Processing...");
 
     try {
-        const res = await axios.post("http://localhost:3000/signup", formData);
+        const res = await axios.post("https://tasty-trail-backend.onrender.com/signup", formData);
   
         if (res.status === 201) {
             setMessage("Signup successful! 🎉 You can now log in.");

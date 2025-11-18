@@ -17,7 +17,7 @@ export default function LoginForm() {
 
     try {
       // 🔹 Send credentials to backend
-      const res = await axios.post("http://localhost:3000/login", formData);
+      const res = await axios.post("https://tasty-trail-backend.onrender.com/login", formData);
 
       if (res.status === 200) {
         // ✅ Save JWT token in localStorage
