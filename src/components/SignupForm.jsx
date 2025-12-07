@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { API_ENDPOINTS } from "@/config/api";
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
@@ -17,7 +18,7 @@ export default function SignupForm() {
     setMessage("Processing...");
 
     try {
-        const res = await axios.post("https://tasty-trail-backend.onrender.com/signup", formData);
+        const res = await axios.post(API_ENDPOINTS.SIGNUP, formData);
   
         if (res.status === 201) {
             setMessage("Signup successful! 🎉 You can now log in.");

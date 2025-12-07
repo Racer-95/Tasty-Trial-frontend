@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import { API_ENDPOINTS } from "@/config/api";
 
 export default function DiscoverPage() {
   const router = useRouter();
@@ -39,117 +40,8 @@ export default function DiscoverPage() {
     Tomatoes: false,
   });
 
-  // Dummy recipe data matching the image
-  const recipes = [
-    {
-      id: 1,
-      title: "Homemade Sushi Rolls",
-      cookTime: 60,
-      rating: 4.8,
-      reviews: 18,
-      category: "",
-      image: "/food_bg.png",
-    },
-    {
-      id: 2,
-      title: "Authentic Margherita",
-      cookTime: 30,
-      rating: 4.7,
-      reviews: 16,
-      category: "Italian",
-      image: "/food_bg.png",
-    },
-    {
-      id: 3,
-      title: "Hearty Vegetarian Curry",
-      cookTime: 45,
-      rating: 4.6,
-      reviews: 15,
-      category: "Indian",
-      image: "/food_bg.png",
-    },
-    {
-      id: 4,
-      title: "Creamy Chicken Alfredo",
-      cookTime: 30,
-      rating: 4.5,
-      reviews: 13,
-      category: "Italian",
-      image: "/food_bg.png",
-    },
-    {
-      id: 5,
-      title: "Creamy Tomato Basil Pasta",
-      cookTime: 25,
-      rating: 4.4,
-      reviews: 12,
-      category: "Italian",
-      image: "/food_bg.png",
-    },
-    {
-      id: 6,
-      title: "Loaded Beef Burritos",
-      cookTime: 40,
-      rating: 4.3,
-      reviews: 11,
-      category: "Mexican",
-      image: "/food_bg.png",
-    },
-    {
-      id: 7,
-      title: "Spicy Chicken Tacos with",
-      cookTime: 35,
-      rating: 4.9,
-      reviews: 95,
-      category: "Mexican",
-      image: "/food_bg.png",
-    },
-    {
-      id: 8,
-      title: "Spicy Red Lentil Soup",
-      cookTime: 50,
-      rating: 4.8,
-      reviews: 90,
-      category: "",
-      image: "/food_bg.png",
-    },
-    {
-      id: 9,
-      title: "Quick Salmon & Veggie Stir-fry",
-      cookTime: 20,
-      rating: 4.7,
-      reviews: 88,
-      category: "Asian",
-      image: "/food_bg.png",
-    },
-    {
-      id: 10,
-      title: "Crispy Falafel Pita Sandwiches",
-      cookTime: 20,
-      rating: 4.6,
-      reviews: 80,
-      category: "Mediterranean",
-      image: "/food_bg.png",
-    },
-    {
-      id: 11,
-      title: "Classic Greek Salad with",
-      cookTime: 15,
-      rating: 4.5,
-      reviews: 72,
-      category: "Mediterranean",
-      image: "/food_bg.png",
-    },
-    {
-      id: 12,
-      title: "Quick Bean and Cheese",
-      cookTime: 20,
-      rating: 4.2,
-      reviews: 55,
-      category: "Mexican",
-      image: "/food_bg.png",
-    },
-  ];
+  // Recipes state (fetched from backend)
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
     // ✅ Protected route check
@@ -160,6 +52,30 @@ export default function DiscoverPage() {
       setIsLoading(false);
     }
   }, [router]);
+
+  // Fetch recipes from backend once authenticated
+  useEffect(() => {
+    if (!isLoading) {
+      const token = localStorage.getItem("token");
+      fetch(API_ENDPOINTS.RECIPES, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          const items = Array.isArray(json?.data) ? json.data : [];
+          const mapped = items.map((r) => ({
+            id: r.id,
+            title: r.title,
+            cookTime: r.cookTime,
+            reviews: 0,
+            category: r.category || "",
+            image: r.imageUrl || "/food_bg.png",
+          }));
+          setRecipes(mapped);
+        })
+        .catch(() => setRecipes([]));
+    }
+  }, [isLoading]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -411,8 +327,9 @@ export default function DiscoverPage() {
           <div className="flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {recipes.map((recipe) => (
-                <div
+                <Link
                   key={recipe.id}
+                  href={`/recipe/${recipe.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-gray-100"
                 >
                   <div className="aspect-square bg-cover bg-center" style={{ backgroundImage: `url('${recipe.image}')` }}></div>
@@ -436,7 +353,7 @@ export default function DiscoverPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

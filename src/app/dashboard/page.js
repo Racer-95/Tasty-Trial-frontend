@@ -3,62 +3,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import { API_ENDPOINTS } from "@/config/api";
 
 export default function Dashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-
-  // Dummy recipe data
-  const featuredRecipes = [
-    {
-      id: 1,
-      title: "Creamy Garlic Pasta",
-      description: "A rich and creamy pasta dish with fresh garlic and parmesan cheese",
-      cookTime: 25,
-      image: "/food_bg.png",
-      category: "Dinner"
-    },
-    {
-      id: 2,
-      title: "Classic French Toast",
-      description: "Golden brown French toast with maple syrup and fresh berries",
-      cookTime: 15,
-      image: "/food_bg.png",
-      category: "Breakfast"
-    },
-    {
-      id: 3,
-      title: "Grilled Salmon",
-      description: "Perfectly grilled salmon with lemon and herbs, served with vegetables",
-      cookTime: 20,
-      image: "/food_bg.png",
-      category: "Dinner"
-    },
-    {
-      id: 4,
-      title: "Chocolate Lava Cake",
-      description: "Warm, gooey chocolate cake with a molten center",
-      cookTime: 30,
-      image: "/food_bg.png",
-      category: "Desserts"
-    },
-    {
-      id: 5,
-      title: "Caesar Salad",
-      description: "Fresh romaine lettuce with homemade Caesar dressing and croutons",
-      cookTime: 10,
-      image: "/food_bg.png",
-      category: "Lunch"
-    },
-    {
-      id: 6,
-      title: "Beef Stir Fry",
-      description: "Tender beef strips with colorful vegetables in a savory sauce",
-      cookTime: 25,
-      image: "/food_bg.png",
-      category: "Dinner"
-    }
-  ];
+  const [featuredRecipes, setFeaturedRecipes] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const categories = [
     { name: "Breakfast", count: 12 },
@@ -77,10 +28,35 @@ export default function Dashboard() {
     }
   }, [router]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      const token = localStorage.getItem("token");
+      fetch(API_ENDPOINTS.RECIPES, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          const items = Array.isArray(json?.data) ? json.data : [];
+          const mapped = items.map((r) => ({
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            cookTime: r.cookTime,
+            image: r.imageUrl || "/food_bg.png",
+            category: r.category || ""
+          }));
+          setFeaturedRecipes(mapped);
+        })
+        .catch(() => setFeaturedRecipes([]));
+    }
+  }, [isLoading]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/login");
   };
+
+  const initials = "U";
 
   if (isLoading) {
     return (
@@ -119,13 +95,38 @@ export default function Dashboard() {
                 Logout
               </button>
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 relative">
               <button
                 onClick={() => router.push("/post-recipe")}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
               >
                 + Post Recipe
               </button>
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="w-9 h-9 rounded-full bg-green-100 text-green-700 font-semibold flex items-center justify-center border border-green-200 hover:bg-green-200"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+              >
+                {initials}
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-12 w-44 bg-white border border-gray-200 rounded-lg shadow-md z-50">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Edit Profile
+                  </Link>
+                  <button
+                    onClick={() => { setMenuOpen(false); handleLogout(); }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -155,8 +156,9 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredRecipes.map((recipe) => (
-              <div
+              <Link
                 key={recipe.id}
+                href={`/recipe/${recipe.id}`}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-gray-100"
               >
                 <div className="h-48 bg-cover bg-center" style={{ backgroundImage: `url('${recipe.image}')` }}>
@@ -171,12 +173,12 @@ export default function Dashboard() {
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{recipe.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 text-sm">⏱ {recipe.cookTime} min</span>
-                    <button className="text-green-600 hover:text-green-700 font-medium text-sm">
+                    <span className="text-green-600 hover:text-green-700 font-medium text-sm">
                       View Recipe →
-                    </button>
+                    </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

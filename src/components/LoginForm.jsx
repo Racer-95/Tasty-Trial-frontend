@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { API_ENDPOINTS } from "@/config/api";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -17,11 +18,33 @@ export default function LoginForm() {
 
     try {
       // 🔹 Send credentials to backend
-      const res = await axios.post("https://tasty-trail-backend.onrender.com/login", formData);
+      const res = await axios.post(API_ENDPOINTS.LOGIN, formData);
 
       if (res.status === 200) {
         // ✅ Save JWT token in localStorage
         localStorage.setItem("token", res.data.token);
+        if (res.data?.email) {
+          localStorage.setItem("email", res.data.email);
+        }
+
+        // 🔹 Option B: Resolve and store userId for future requests (e.g., authorId on recipe)
+        try {
+          const token = res.data.token;
+          const email = res.data?.email;
+          if (token && email) {
+            const usersRes = await axios.get(API_ENDPOINTS.USERS, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const list = Array.isArray(usersRes.data?.data) ? usersRes.data.data : [];
+            const me = list.find((u) => u.email === email);
+            if (me?.id != null) {
+              localStorage.setItem("userId", String(me.id));
+              if (me.name) localStorage.setItem("name", me.name);
+            }
+          }
+        } catch (_) {
+          // Non-blocking: proceed even if userId fetch fails
+        }
 
         // ✅ Optionally show success message
         setMessage("✅ Login successful! Redirecting to dashboard...");
