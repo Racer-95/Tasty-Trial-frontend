@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { API_ENDPOINTS } from "@/config/api";
 
 export default function DiscoverPage() {
@@ -117,39 +118,7 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🍴</span>
-              <Link href="/dashboard" className="text-xl font-bold text-green-600">
-                Tasty Trail
-              </Link>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors">
-                Home
-              </Link>
-              <Link href="/discover" className="text-green-600 font-medium">
-                Browse Recipes
-              </Link>
-              <button className="text-gray-700 hover:text-green-600 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </nav>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/post-recipe")}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-              >
-                + Post Recipe
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

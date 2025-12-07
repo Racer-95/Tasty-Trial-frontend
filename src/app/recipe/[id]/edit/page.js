@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import axios from "axios";
 import Footer from "@/components/Footer";
 import { API_ENDPOINTS } from "@/config/api";
 
-export default function PostRecipePage() {
+export default function EditRecipePage() {
   const router = useRouter();
+  const params = useParams();
+  const recipeId = Number(params?.id);
+  const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -20,15 +25,34 @@ export default function PostRecipePage() {
     category: "",
     imageUrl: "",
   });
-  const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
+      return;
     }
-  }, [router]);
+    if (!recipeId) return;
+
+    // Fetch existing recipe
+    axios
+      .get(API_ENDPOINTS.RECIPE_BY_ID(recipeId))
+      .then((res) => {
+        const r = res.data?.data;
+        if (!r) return;
+        setFormData({
+          title: r.title || "",
+          description: r.description || "",
+          ingredients: r.ingredients || "",
+          steps: r.steps || "",
+          cookTime: String(r.cookTime ?? ""),
+          cusine: r.cusine || "",
+          category: r.category || "",
+          imageUrl: r.imageUrl || "",
+        });
+      })
+      .finally(() => setIsLoading(false));
+  }, [router, recipeId]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -40,28 +64,22 @@ export default function PostRecipePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // imageUrl is captured via text input now
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage("Posting your recipe...");
+    setMessage("Updating recipe...");
 
     const token = localStorage.getItem("token");
     if (!token) {
-      setMessage("You need to be logged in to post a recipe.");
+      setMessage("You need to be logged in.");
       router.push("/login");
       return;
     }
 
     try {
-      // Use provided image URL string
-      const imageUrl = (formData.imageUrl || "").trim();
-
-      // Prepare JSON data for request body
       const storedUserId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-      const authorId = storedUserId ? Number(storedUserId) : null;
-      const requestData = {
+      const authorId = storedUserId ? Number(storedUserId) : undefined;
+      const payload = {
         title: formData.title,
         description: formData.description,
         ingredients: formData.ingredients,
@@ -69,46 +87,34 @@ export default function PostRecipePage() {
         cookTime: parseInt(formData.cookTime) || 0,
         cusine: formData.cusine,
         category: formData.category,
-        imageUrl: imageUrl, // direct URL string
-        likes: 0,
-        authorId
+        imageUrl: (formData.imageUrl || "").trim(),
       };
+      if (authorId != null) payload.authorId = authorId;
 
-      await axios.post(
-        API_ENDPOINTS.RECIPES,
-        requestData,
-  );
-
-      setMessage("🎉 Recipe posted successfully!");
-      setFormData({
-        title: "",
-        description: "",
-        ingredients: "",
-        steps: "",
-        cookTime: "",
-        cusine: "",
-        category: "",
-        imageUrl: "",
+      await axios.put(API_ENDPOINTS.RECIPE_BY_ID(recipeId), payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      // Redirect to dashboard after successful post
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1500);
+
+      setMessage("✅ Recipe updated successfully!");
+      setTimeout(() => router.push("/my-recipes"), 1000);
     } catch (error) {
-      console.error("Error posting recipe:", error);
       if (error.response?.data?.message) {
         setMessage(`⚠️ ${error.response.data.message}`);
-      } else if (error.response?.data) {
-        setMessage(`⚠️ ${JSON.stringify(error.response.data)}`);
-      } else if (error.message) {
-        setMessage(`⚠️ ${error.message}`);
       } else {
-        setMessage("⚠️ Failed to post recipe. Please try again.");
+        setMessage("⚠️ Failed to update recipe.");
       }
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -118,12 +124,8 @@ export default function PostRecipePage() {
       {/* Main Content */}
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Share a New Recipe
-          </h1>
-          <p className="text-gray-600">
-            Add your tasty creation so others can try it out.
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Edit Recipe</h1>
+          <p className="text-gray-600">Update your recipe details below.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md border border-gray-200 p-6 md:p-8 space-y-6">
@@ -167,13 +169,10 @@ export default function PostRecipePage() {
               name="ingredients"
               value={formData.ingredients}
               onChange={handleChange}
-              placeholder="List ingredients, one per line.&#10;e.g.&#10;2 cups flour&#10;1 cup milk&#10;3 eggs"
+              placeholder="List ingredients, one per line."
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20 min-h-[150px] resize-y font-mono"
               required
             />
-            <p className="text-xs text-gray-500">
-              Enter each ingredient on a new line
-            </p>
           </div>
 
           <div className="space-y-2">
@@ -185,13 +184,10 @@ export default function PostRecipePage() {
               name="steps"
               value={formData.steps}
               onChange={handleChange}
-              placeholder="Explain the cooking steps clearly so anyone can follow along.&#10;e.g.&#10;Step 1: Preheat the oven to 350°F&#10;Step 2: Mix the ingredients..."
+              placeholder="Explain the cooking steps clearly so anyone can follow along."
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20 min-h-[180px] resize-y"
               required
             />
-            <p className="text-xs text-gray-500">
-              Enter each step on a new line
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,16 +273,13 @@ export default function PostRecipePage() {
                 required
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
               />
-              <p className="text-xs text-gray-500">
-                Paste a direct link to your dish photo (required)
-              </p>
             </div>
           </div>
 
           {message && (
             <div className={`p-4 rounded-lg ${
-              message.includes("🎉") 
-                ? "bg-green-50 text-green-800 border border-green-200" 
+              message.startsWith("✅")
+                ? "bg-green-50 text-green-800 border border-green-200"
                 : "bg-red-50 text-red-800 border border-red-200"
             }`}>
               <p className="text-sm font-medium">{message}</p>
@@ -296,7 +289,7 @@ export default function PostRecipePage() {
           <div className="flex gap-4 pt-4">
             <button
               type="button"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/my-recipes")}
               className="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors"
             >
               Cancel
@@ -304,18 +297,15 @@ export default function PostRecipePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 md:flex-auto bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-sm transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 md:flex-auto bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-sm transition hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {submitting ? "Posting..." : "Post Recipe"}
+              {submitting ? "Updating..." : "Update Recipe"}
             </button>
           </div>
         </form>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
 }
-
-

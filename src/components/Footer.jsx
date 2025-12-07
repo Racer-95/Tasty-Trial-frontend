@@ -38,18 +38,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/login" 
+                  href="/profile" 
                   className="text-orange-200/80 hover:text-orange-400 transition-colors underline-offset-4 hover:underline"
                 >
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/signup" 
-                  className="text-orange-200/80 hover:text-orange-400 transition-colors underline-offset-4 hover:underline"
-                >
-                  Sign Up
+                  Profile
                 </Link>
               </li>
             </ul>
@@ -61,7 +53,6 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-orange-200/80">
               <li>Share your favorite recipes</li>
               <li>Discover new cuisines</li>
-              <li>Connect with food lovers</li>
             </ul>
           </div>
         </div>

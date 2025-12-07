@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "@/components/Header";
 import axios from "axios";
 import Footer from "@/components/Footer";
 import { API_ENDPOINTS } from "@/config/api";
@@ -22,7 +23,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "" });
   const [message, setMessage] = useState("");
 
   const token = useMemo(() => (typeof window !== "undefined" ? localStorage.getItem("token") : null), []);
@@ -41,7 +42,7 @@ export default function ProfilePage() {
         const me = list.find((u) => u.email === emailFromToken);
         if (me) {
           setUserId(me.id);
-          setFormData({ name: me.name || "", email: me.email || "", password: "" });
+          setFormData({ name: me.name || "", email: me.email || "" });
         } else {
           // Fallback: prefill email from token
           setFormData((p) => ({ ...p, email: emailFromToken }));
@@ -72,8 +73,7 @@ export default function ProfilePage() {
     }
     setMessage("Saving changes...");
     try {
-      const payload = { name: formData.name, email: formData.email };
-      if (formData.password) payload.password = formData.password;
+      const payload = { name: formData.name };
       await axios.put(`${API_ENDPOINTS.USER_BY_ID(userId)}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -98,32 +98,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🍴</span>
-              <Link href="/dashboard" className="text-xl font-bold text-green-600">
-                Tasty Trail
-              </Link>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors">
-                Home
-              </Link>
-              <Link href="/discover" className="text-gray-700 hover:text-green-600 transition-colors">
-                Discover
-              </Link>
-              <Link href="/post-recipe" className="text-gray-700 hover:text-green-600 transition-colors">
-                Post Recipe
-              </Link>
-              <button onClick={handleLogout} className="text-gray-700 hover:text-green-600 transition-colors">
-                Logout
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -157,26 +132,13 @@ export default function ProfilePage() {
               name="email"
               type="email"
               value={formData.email}
-              onChange={handleChange}
+              readOnly
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 shadow-sm outline-none"
             />
+            <p className="text-xs text-gray-500">Email cannot be changed.</p>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-900">
-              New Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Leave blank to keep current password"
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
-            />
-          </div>
 
           {message && (
             <div className={`p-4 rounded-lg ${message.startsWith("✅") ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>

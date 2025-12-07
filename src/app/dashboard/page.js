@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { API_ENDPOINTS } from "@/config/api";
 
 export default function Dashboard() {
@@ -56,7 +57,7 @@ export default function Dashboard() {
     router.push("/login");
   };
 
-  const initials = "U";
+  const initials = "👤";
 
   if (isLoading) {
     return (
@@ -69,68 +70,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🍴</span>
-              <Link href="/dashboard" className="text-xl font-bold text-green-600">
-                Tasty Trail
-              </Link>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors">
-                Home
-              </Link>
-              <Link href="/discover" className="text-gray-700 hover:text-green-600 transition-colors">
-                Discover
-              </Link>
-              <Link href="/post-recipe" className="text-gray-700 hover:text-green-600 transition-colors">
-                Post Recipe
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-green-600 transition-colors"
-              >
-                Logout
-              </button>
-            </nav>
-            <div className="flex items-center gap-4 relative">
-              <button
-                onClick={() => router.push("/post-recipe")}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-              >
-                + Post Recipe
-              </button>
-              <button
-                onClick={() => setMenuOpen((o) => !o)}
-                className="w-9 h-9 rounded-full bg-green-100 text-green-700 font-semibold flex items-center justify-center border border-green-200 hover:bg-green-200"
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-              >
-                {initials}
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-12 w-44 bg-white border border-gray-200 rounded-lg shadow-md z-50">
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Edit Profile
-                  </Link>
-                  <button
-                    onClick={() => { setMenuOpen(false); handleLogout(); }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-50 to-orange-50 py-16">
