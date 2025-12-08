@@ -10,36 +10,20 @@ export default function DiscoverPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("Popularity");
+  const [sortBy, setSortBy] = useState("Recent");
   const [showFilters, setShowFilters] = useState(true);
-  const [showCuisine, setShowCuisine] = useState(true);
-  const [showDietary, setShowDietary] = useState(true);
-  const [showIngredients, setShowIngredients] = useState(true);
 
   // Filter states
-  const [cuisineFilters, setCuisineFilters] = useState({
-    Italian: true,
-    Mexican: true,
-    Indian: true,
-    Asian: true,
-    Mediterranean: true,
+  const [categoryFilters, setCategoryFilters] = useState({
+    Breakfast: true,
+    Lunch: true,
+    Dinner: true,
+    Desserts: true,
+    Snacks: true,
+    Beverages: true,
   });
 
-  const [dietaryFilters, setDietaryFilters] = useState({
-    Vegetarian: true,
-    Vegan: true,
-    "Gluten-Free": true,
-    "Dairy-Free": true,
-  });
-
-  const [ingredientFilters, setIngredientFilters] = useState({
-    Chicken: false,
-    Beef: false,
-    Pasta: false,
-    Rice: false,
-    Potatoes: false,
-    Tomatoes: false,
-  });
+  // Dietary and Main Ingredient filters removed
 
   // Recipes state (fetched from backend)
   const [recipes, setRecipes] = useState([]);
@@ -71,6 +55,8 @@ export default function DiscoverPage() {
             reviews: 0,
             category: r.category || "",
             image: r.imageUrl || "/food_bg.png",
+            likes: typeof r.likes === "number" ? r.likes : 0,
+            createdAt: r.createdAt || null,
           }));
           setRecipes(mapped);
         })
@@ -87,13 +73,11 @@ export default function DiscoverPage() {
     setCuisineFilters((prev) => ({ ...prev, [cuisine]: !prev[cuisine] }));
   };
 
-  const toggleDietary = (dietary) => {
-    setDietaryFilters((prev) => ({ ...prev, [dietary]: !prev[dietary] }));
+  const toggleCategory = (category) => {
+    setCategoryFilters((prev) => ({ ...prev, [category]: !prev[category] }));
   };
 
-  const toggleIngredient = (ingredient) => {
-    setIngredientFilters((prev) => ({ ...prev, [ingredient]: !prev[ingredient] }));
-  };
+  // Removed dietary and ingredient toggles
 
   const renderStars = () => {
     return (
@@ -133,10 +117,10 @@ export default function DiscoverPage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search recipe"
+                    placeholder="Search recipes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                   <svg
                     className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -153,7 +137,7 @@ export default function DiscoverPage() {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Sort By</h3>
                 <div className="space-y-2">
-                  {["Popularity", "Newest", "Prep Time (Asc)", "Rating"].map((option) => (
+                  {["Recent", "Prep Time"].map((option) => (
                     <button
                       key={option}
                       onClick={() => setSortBy(option)}
@@ -188,103 +172,23 @@ export default function DiscoverPage() {
 
                 {showFilters && (
                   <div className="space-y-4">
-                    {/* Cuisine */}
-                    <div>
-                      <button
-                        onClick={() => setShowCuisine(!showCuisine)}
-                        className="w-full flex items-center justify-between text-sm font-semibold text-gray-900 mb-2"
-                      >
-                        Cuisine
-                        <svg
-                          className={`w-4 h-4 transition-transform ${showCuisine ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {showCuisine && (
-                        <div className="space-y-2 ml-2">
-                          {Object.keys(cuisineFilters).map((cuisine) => (
-                            <label key={cuisine} className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={cuisineFilters[cuisine]}
-                                onChange={() => toggleCuisine(cuisine)}
-                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                              />
-                              <span className="text-sm text-gray-700">{cuisine}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Dietary */}
+                    {/* Category */}
                     <div>
-                      <button
-                        onClick={() => setShowDietary(!showDietary)}
-                        className="w-full flex items-center justify-between text-sm font-semibold text-gray-900 mb-2"
-                      >
-                        Dietary
-                        <svg
-                          className={`w-4 h-4 transition-transform ${showDietary ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {showDietary && (
-                        <div className="space-y-2 ml-2">
-                          {Object.keys(dietaryFilters).map((dietary) => (
-                            <label key={dietary} className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={dietaryFilters[dietary]}
-                                onChange={() => toggleDietary(dietary)}
-                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                              />
-                              <span className="text-sm text-gray-700">{dietary}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Main Ingredients */}
-                    <div>
-                      <button
-                        onClick={() => setShowIngredients(!showIngredients)}
-                        className="w-full flex items-center justify-between text-sm font-semibold text-gray-900 mb-2"
-                      >
-                        Main Ingredients
-                        <svg
-                          className={`w-4 h-4 transition-transform ${showIngredients ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {showIngredients && (
-                        <div className="space-y-2 ml-2">
-                          {Object.keys(ingredientFilters).map((ingredient) => (
-                            <label key={ingredient} className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={ingredientFilters[ingredient]}
-                                onChange={() => toggleIngredient(ingredient)}
-                                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                              />
-                              <span className="text-sm text-gray-700">{ingredient}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Category</h4>
+                      <div className="space-y-2 ml-2">
+                        {Object.keys(categoryFilters).map((cat) => (
+                          <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={categoryFilters[cat]}
+                              onChange={() => toggleCategory(cat)}
+                              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                            />
+                            <span className="text-sm text-gray-700">{cat}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -294,31 +198,51 @@ export default function DiscoverPage() {
 
           {/* Right Section - Recipe Grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {recipes.map((recipe) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...recipes]
+                .filter((r) => {
+                  if (searchQuery.trim() && !r.title.toLowerCase().includes(searchQuery.trim().toLowerCase())) {
+                    return false;
+                  }
+                  return true;
+                })
+                .filter((r) => {
+                  const v = categoryFilters[r.category];
+                  return v === undefined ? true : !!v;
+                })
+                .sort((a, b) => {
+                  if (sortBy === "Recent") {
+                    const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return db - da;
+                  }
+                  if (sortBy === "Prep Time") {
+                    return (a.cookTime || 0) - (b.cookTime || 0);
+                  }
+                  return 0;
+                })
+                .map((recipe) => (
                 <Link
                   key={recipe.id}
                   href={`/recipe/${recipe.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-gray-100"
+                  className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 transform hover:-translate-y-1 flex flex-col h-full"
                 >
-                  <div className="aspect-square bg-cover bg-center" style={{ backgroundImage: `url('${recipe.image}')` }}></div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1 text-sm">{recipe.title}</h3>
-                    {recipe.category && (
-                      <span className="inline-block text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded mb-2">
-                        {recipe.category}
-                      </span>
-                    )}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-1 text-gray-500 text-xs">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {recipe.cookTime} min
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {renderStars()}
-                        <span className="text-xs text-gray-500">({recipe.reviews})</span>
+                  <div className="h-56 bg-cover bg-center flex-shrink-0" style={{ backgroundImage: `url('${recipe.image}')` }}></div>
+                  <div className="p-5 flex flex-col h-48">
+                    <h3 className="font-semibold text-gray-900 text-base mb-3 line-clamp-2 min-h-[3rem]">{recipe.title}</h3>
+                    <div className="mt-auto">
+                      {recipe.category && (
+                        <span className="inline-block text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg mb-3 font-medium">
+                          {recipe.category}
+                        </span>
+                      )}
+                      <div className="flex items-center justify-start mt-auto">
+                        <div className="flex items-center gap-2 text-gray-600 text-sm">
+                          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-medium">{recipe.cookTime} min</span>
+                        </div>
                       </div>
                     </div>
                   </div>

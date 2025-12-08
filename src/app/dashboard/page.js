@@ -12,13 +12,6 @@ export default function Dashboard() {
   const [featuredRecipes, setFeaturedRecipes] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const categories = [
-    { name: "Breakfast", count: 12 },
-    { name: "Lunch", count: 18 },
-    { name: "Dinner", count: 24 },
-    { name: "Desserts", count: 15 }
-  ];
-
   useEffect(() => {
     // ✅ Protected route check
     const token = localStorage.getItem("token");
@@ -38,15 +31,25 @@ export default function Dashboard() {
         .then((res) => res.json())
         .then((json) => {
           const items = Array.isArray(json?.data) ? json.data : [];
-          const mapped = items.map((r) => ({
-            id: r.id,
-            title: r.title,
-            description: r.description,
-            cookTime: r.cookTime,
-            image: r.imageUrl || "/food_bg.png",
-            category: r.category || ""
-          }));
-          setFeaturedRecipes(mapped);
+          // Sort by creation date (newest first) and take first 6
+          const recentRecipes = items
+            .sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+              const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+              return dateB - dateA;
+            })
+            .slice(0, 6)
+            .map((r) => ({
+              id: r.id,
+              title: r.title,
+              description: r.description,
+              cookTime: r.cookTime,
+              image: r.imageUrl || "/food_bg.png",
+              category: r.category || "",
+              likes: typeof r.likes === "number" ? r.likes : 0,
+              createdAt: r.createdAt || null
+            }));
+          setFeaturedRecipes(recentRecipes);
         })
         .catch(() => setFeaturedRecipes([]));
     }
@@ -90,7 +93,7 @@ export default function Dashboard() {
         <section className="mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Featured Recipes</h2>
-            <Link href="/post-recipe" className="text-green-600 hover:text-green-700 font-medium">
+            <Link href="/discover" className="text-green-600 hover:text-green-700 font-medium">
               View All →
             </Link>
           </div>
@@ -113,28 +116,10 @@ export default function Dashboard() {
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{recipe.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 text-sm">⏱ {recipe.cookTime} min</span>
-                    <span className="text-green-600 hover:text-green-700 font-medium text-sm">
-                      View Recipe →
-                    </span>
+                   
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Categories Section */}
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Browse by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {categories.map((category) => (
-              <div
-                key={category.name}
-                className="bg-gradient-to-br from-green-50 to-orange-50 rounded-lg p-6 text-center hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
-              >
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{category.name}</h3>
-                <p className="text-gray-600 text-sm">{category.count} recipes</p>
-              </div>
             ))}
           </div>
         </section>

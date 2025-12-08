@@ -30,7 +30,8 @@ export default function RecipeDetailPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setRecipe(data.data || data);
+          const recipeData = data?.data || data;
+          setRecipe(recipeData);
         } else {
           // If recipe not found, redirect or show error
           router.push("/dashboard");
@@ -112,10 +113,8 @@ export default function RecipeDetailPage() {
     ? recipe.steps.split("\n").filter((step) => step.trim())
     : [];
 
-  // Calculate total time (assuming prep time is 10 minutes if not provided)
-  const prepTime = 15; // Default prep time
+  // Get cook time from recipe data
   const cookTime = parseInt(recipe.cookTime) || 25;
-  const totalTime = prepTime + cookTime;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -156,6 +155,17 @@ export default function RecipeDetailPage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/discover')}
+          className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Discover
+        </button>
+        
         {/* Recipe Title */}
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           {recipe.title}
@@ -167,36 +177,21 @@ export default function RecipeDetailPage() {
         </p>
 
         {/* Recipe Metadata */}
-        <div className="flex flex-wrap gap-6 mb-6 text-gray-700">
-          <div>
-            <span className="font-semibold">Prep Time: </span>
-            <span>{prepTime} minutes</span>
+        <div className="flex flex-wrap gap-6 mb-6 text-gray-700 items-center">
+          <div className="flex items-center gap-1">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">{cookTime} min</span>
           </div>
-          <div>
-            <span className="font-semibold">Cook Time: </span>
-            <span>{cookTime} minutes</span>
-          </div>
-          <div>
-            <span className="font-semibold">Total Time: </span>
-            <span>{totalTime} minutes</span>
-          </div>
-          <div>
-            <span className="font-semibold">Servings: </span>
-            <span>4</span>
-          </div>
-        </div>
-
-        {/* Author Info */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-orange-400 flex items-center justify-center text-white font-semibold">
-            {recipe.authorName?.[0] || "C"}
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Recipe by</p>
-            <p className="font-semibold text-gray-900">
-              {recipe.authorName || "Chef Isabella Rodriguez"}
-            </p>
-          </div>
+          {recipe.cuisine && (
+            <div className="flex items-center gap-1">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium capitalize">{recipe.cusine}</span>
+            </div>
+          )}
         </div>
 
         {/* Main Dish Image */}
@@ -217,10 +212,7 @@ export default function RecipeDetailPage() {
               {ingredients.length > 0 ? (
                 ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-1 w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
+                
                     <span className="text-gray-700">{ingredient.trim()}</span>
                   </li>
                 ))
@@ -233,20 +225,15 @@ export default function RecipeDetailPage() {
           {/* Right Column - Instructions */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Instructions</h2>
-            <ol className="space-y-4">
+            <div className="text-gray-700 whitespace-pre-wrap">
               {steps.length > 0 ? (
                 steps.map((step, index) => (
-                  <li key={index} className="flex gap-3">
-                    <span className="text-green-600 font-semibold min-w-[60px]">
-                      Step {index + 1}:
-                    </span>
-                    <span className="text-gray-700 flex-1">{step.trim()}</span>
-                  </li>
+                  <p key={index} className="mb-3">{step.trim()}</p>
                 ))
               ) : (
-                <li className="text-gray-500">No instructions provided</li>
+                <p className="text-gray-500">No instructions provided</p>
               )}
-            </ol>
+            </div>
           </div>
         </div>
 
@@ -268,10 +255,7 @@ export default function RecipeDetailPage() {
                     </h3>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-gray-500 text-xs">{relatedRecipe.cookTime} min prep</span>
-                      <div className="flex items-center gap-1">
-                        {renderStars()}
-                        <span className="text-xs text-gray-500">({relatedRecipe.reviews})</span>
-                      </div>
+            
                     </div>
                   </div>
                 </Link>
